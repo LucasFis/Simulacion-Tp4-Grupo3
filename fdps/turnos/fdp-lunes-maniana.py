@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos general:
 llamadas["fecha_ocurrencia"] = pd.to_datetime(llamadas["Fecha"], format="%d/%m/%Y %H:%M")
@@ -42,23 +42,22 @@ llamadas_lunes_maniana = llamadas_lunes_maniana.dropna(subset=["IA_min"])
 
 #Grafico histograma
 
-llamadas_lunes_maniana.hist('IA_min', bins=200)
-plt.show()
+# llamadas_lunes_maniana.hist('IA_min', bins=200)
+# plt.show()
 
 #Fdp lunes maniana:
 
 # fdp_lunes_maniana_ia = Fitter(llamadas_lunes_maniana.IA_min)
 # fdp_lunes_maniana_ia.fit()
-# fdp_lunes_maniana_ia.summary(10)
-
-#print(fdp_lunes_maniana_ia.get_best(method="sumsquare_error"))
+# print(fdp_lunes_maniana_ia.summary(3))
+# print(fdp_lunes_maniana_ia.get_best(method="sumsquare_error"))
 
 # df = 0.6473329065381139
 # loc = -1.6478587279550768e-28
 # scale = 7.66636374789493
 #
-# fdp_lunes_maniana_ia_chi = stats.chi.rvs(df, loc, scale)
-
+# fdp_lunes_maniana_ia_chi = stats.chi.rvs(df, loc, scale, 200)
+#
 # plt.title("Histograma")
 # plt.xlabel("X axis")
 # plt.ylabel("Y axis")

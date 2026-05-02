@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 #Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos
 
@@ -26,15 +26,15 @@ llamadas_telefonia["TA_min"] = llamadas_telefonia["TA_numerico"] / 60
 
 #Grafico histograma
 #
-# llamadas_telefonia.hist('TA_min', bins=200)
-# plt.show()
+llamadas_telefonia.hist('TA_min', bins=200)
+plt.show()
 
 #Fdp TA internet:
 
-# fdp_telefonia_ta = Fitter(llamadas_telefonia.TA_min)
-# fdp_telefonia_ta.fit()
-# print(fdp_telefonia_ta.summary(10))
-# print(fdp_telefonia_ta.get_best(method="sumsquare_error"))
+fdp_telefonia_ta = Fitter(llamadas_telefonia.TA_min)
+fdp_telefonia_ta.fit()
+print(fdp_telefonia_ta.summary(3))
+print(fdp_telefonia_ta.get_best(method="sumsquare_error"))
 
 u = 2.4831921870607196
 s = 0.5248640126200628
@@ -52,3 +52,16 @@ plt.xlim(0, 60)
 # plt.ylim(0, 1300)
 plt.hist(fdp_internet_ta_dpareto_lognorm, bins=200)
 plt.show()
+
+#Grafico continua
+x = np.linspace(0, 50, 500)
+
+y = stats.dpareto_lognorm.pdf(x, u, s,a, b, loc=loc, scale=scale)
+
+plt.plot(x, y)
+plt.title("Distribución dpareto_lognorm")
+plt.xlabel("Tiempo")
+plt.ylabel("Densidad")
+plt.grid(True)
+plt.show()
+

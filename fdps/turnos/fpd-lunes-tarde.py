@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos general:
 llamadas["fecha_ocurrencia"] = pd.to_datetime(llamadas["Fecha"], format="%d/%m/%Y %H:%M")
@@ -41,21 +41,20 @@ llamadas_lunes_tarde = llamadas_lunes_tarde.dropna(subset=["IA_min"])
 
 #Grafico histograma
 
-# llamadas_lunes_tarde.hist('IA_min', bins=200)
-# plt.show()
+llamadas_lunes_tarde.hist('IA_min', bins=200)
+plt.show()
 
-#Fdp lunes tarde:
-# fdp_lunes_tarde_ia = Fitter(llamadas_lunes_tarde.IA_min)
-# fdp_lunes_tarde_ia.fit()
-# print(fdp_lunes_tarde_ia.summary(10))
-
-#print(fdp_lunes_tarde_ia.get_best(method="sumsquare_error"))
+# Fdp lunes tarde:
+fdp_lunes_tarde_ia = Fitter(llamadas_lunes_tarde.IA_min)
+fdp_lunes_tarde_ia.fit()
+print(fdp_lunes_tarde_ia.summary(3))
+print(fdp_lunes_tarde_ia.get_best(method="sumsquare_error"))
 
 a = 1.9868010751079173
 loc = -2.0636279622915342e-10
 scale = 4.955277601907699
 
-fdp_lunes_tarde_ia_kappa3 = stats.kappa3.rvs(a, loc, scale,10000)
+fdp_lunes_tarde_ia_kappa3 = stats.kappa3.rvs(a, loc, scale, 150)
 print(fdp_lunes_tarde_ia_kappa3.min(), fdp_lunes_tarde_ia_kappa3.max())
 
 plt.title("Histograma")

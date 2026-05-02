@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos general:
 llamadas["fecha_ocurrencia"] = pd.to_datetime(llamadas["Fecha"], format="%d/%m/%Y %H:%M")
@@ -42,14 +42,14 @@ llamadas_viernes_maniana = llamadas_viernes_maniana.dropna(subset=["IA_min"])
 
 #Grafico histograma
 
-# llamadas_viernes_maniana.hist('IA_min', bins=200)
-# plt.show()
+llamadas_viernes_maniana.hist('IA_min', bins=200)
+plt.show()
 
 #Fdp viernes maniana:
 
 # fdp_viernes_maniana_ia = Fitter(llamadas_viernes_maniana.IA_min)
 # fdp_viernes_maniana_ia.fit()
-# print(fdp_viernes_maniana_ia.summary(10))
+# print(fdp_viernes_maniana_ia.summary(3))
 # print(fdp_viernes_maniana_ia.get_best(method="sumsquare_error"))
 
 b = 3.2268293314082763
@@ -57,7 +57,7 @@ c = 5.9871932705168724
 loc = -13.033395258844632
 scale = 13.03339525833951
 #
-fdp_viernes_maniana_ia_truncpareto = stats.truncpareto.rvs(b, c, loc, scale, 10000)
+fdp_viernes_maniana_ia_truncpareto = stats.truncpareto.rvs(b, c, loc, scale, 150)
 #
 plt.title("Histograma")
 plt.xlabel("X axis")
@@ -67,8 +67,14 @@ plt.xlim(0, 60)
 plt.hist(fdp_viernes_maniana_ia_truncpareto, bins=200)
 plt.show()
 
+#Grafico continuo
+x = np.linspace(0, 50, 500)
 
+y = stats.truncpareto.pdf(x, b, c, loc=loc, scale=scale)
 
-
-
-
+plt.plot(x, y)
+plt.title("Distribución Truncpareto")
+plt.xlabel("Tiempo")
+plt.ylabel("Densidad")
+plt.grid(True)
+plt.show()

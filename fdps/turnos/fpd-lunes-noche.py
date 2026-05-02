@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos general:
 llamadas["fecha_ocurrencia"] = pd.to_datetime(llamadas["Fecha"], format="%d/%m/%Y %H:%M")
@@ -41,8 +41,8 @@ llamadas_lunes_noche = llamadas_lunes_noche.dropna(subset=["IA_min"])
 
 #Grafico histograma
 
-# llamadas_lunes_noche.hist('IA_min', bins=200)
-# plt.show()
+llamadas_lunes_noche.hist('IA_min', bins=200)
+plt.show()
 
 #Fdp lunes noche:
 # fdp_lunes_noche_ia = Fitter(llamadas_lunes_noche.IA_min)
@@ -56,7 +56,7 @@ s = 2.0188407126934353
 loc = -0.2584689362182534
 scale = 199.46475939297915
 
-fdp_lunes_noche_ia_powerlognorm = stats.powerlognorm.rvs(c, s, loc, scale, 10000)
+fdp_lunes_noche_ia_powerlognorm = stats.powerlognorm.rvs(c, s, loc, scale, 150)
 print(fdp_lunes_noche_ia_powerlognorm.min(), fdp_lunes_noche_ia_powerlognorm.max())
 
 plt.title("Histograma")
@@ -65,4 +65,16 @@ plt.ylabel("Y axis")
 plt.xlim(0, 60)
 # plt.ylim(0, 1300)
 plt.hist(fdp_lunes_noche_ia_powerlognorm, bins=200)
+plt.show()
+
+#Grafico continuo
+x = np.linspace(0, 50, 500)
+
+y = stats.powerlognorm.pdf(x, c, s, loc=loc, scale=scale)
+
+plt.plot(x, y)
+plt.title("Distribución PowerLogNorm")
+plt.xlabel("Tiempo")
+plt.ylabel("Densidad")
+plt.grid(True)
 plt.show()

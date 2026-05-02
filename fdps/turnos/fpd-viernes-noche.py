@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Carga de datos
-llamadas = pd.read_csv('../call_center.csv', sep=";")
+llamadas = pd.read_csv('../../../call_center.csv', sep=";")
 
 #Preparacion de datos general:
 llamadas["fecha_ocurrencia"] = pd.to_datetime(llamadas["Fecha"], format="%d/%m/%Y %H:%M")
@@ -42,22 +42,22 @@ llamadas_viernes_noche = llamadas_viernes_noche.dropna(subset=["IA_min"])
 
 #Grafico histograma
 
-# llamadas_viernes_noche.hist('IA_min', bins=200)
-# plt.show()
+llamadas_viernes_noche.hist('IA_min', bins=200)
+plt.show()
 
 #Fdp viernes tarde:
 
-# fdp_viernes_noche_ia = Fitter(llamadas_viernes_noche.IA_min)
-# fdp_viernes_noche_ia.fit()
-# print(fdp_viernes_noche_ia.summary(10))
-# print(fdp_viernes_noche_ia.get_best(method="sumsquare_error"))
+fdp_viernes_noche_ia = Fitter(llamadas_viernes_noche.IA_min)
+fdp_viernes_noche_ia.fit()
+print(fdp_viernes_noche_ia.summary(3))
+print(fdp_viernes_noche_ia.get_best(method="sumsquare_error"))
 
 b = 8.802605357768954
 c = 1.86975146455312
 loc = -68.98608797880931
 scale = 68.98608797836727
 #
-fdp_viernes_noche_ia_truncpareto = stats.truncpareto.rvs(b, c, loc, scale, 10000)
+fdp_viernes_noche_ia_truncpareto = stats.truncpareto.rvs(b, c, loc, scale, 150)
 #
 plt.title("Histograma")
 plt.xlabel("X axis")
@@ -67,7 +67,17 @@ plt.xlim(0, 60)
 plt.hist(fdp_viernes_noche_ia_truncpareto, bins=200)
 plt.show()
 
+#Grafico continuo
+x = np.linspace(0, 50, 500)
 
+y = stats.truncpareto.pdf(x, b, c, loc=loc, scale=scale)
+
+plt.plot(x, y)
+plt.title("Distribución truncpareto")
+plt.xlabel("Tiempo")
+plt.ylabel("Densidad")
+plt.grid(True)
+plt.show()
 
 
 
