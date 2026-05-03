@@ -2,51 +2,44 @@ import numpy as np
 from scipy import stats
 
 from elecciones import redondear
-
-
 def ta_internet():
-    while True:
-        a = -2.8996295458678
-        b = 1.3726737511794445
-        loc = -0.0742865510715616
-        scale = 0.6081178959478482
+    a = 2.051524387177043
+    b = 5.456008966942054
+    loc = 0.2902148888942779
+    scale = 6.396128391941712
 
-        u = np.random.uniform(0.000001, 0.999999)
-        x = stats.johnsonsu.ppf(u, a, b, loc, scale)
+    u = np.random.uniform(0.000001, 0.999999)
+    x = stats.betaprime.ppf(u, a, b, loc, scale)
+    return x
 
-        if x > 0:
-            return redondear(x,5)
 
 def ta_telefonia():
-    while True:
-        u = 2.4831921870607196
-        s = 0.5248640126200628
-        a = 7.853682872770126
-        b = 1.9938410482735183
-        loc = -0.031295580192663916
-        scale = 0.271584523255729
-        z = np.random.uniform(0.000001, 0.999999)
-        x = stats.dpareto_lognorm.ppf(z, u, s, a, b, loc, scale)
-        if x > 0:
-            return redondear(x,5)
+    u = 2.4831921870607196
+    s = 0.5248640126200628
+    a = 0.25272397442857464
+    b = 0.9149481236528247
+    c = 1.965332216326705
+    loc = 0.4166666624026105
+    scale = 2.1216173497193322
+    z = np.random.uniform(0.000001, 0.999999)
+    x = stats.genexpon.ppf(z, a, b, c, loc, scale)
+    return x
+
 
 def ta_internet_movil():
-    while True:
-        mu = 2.4831921870607196
-        loc = -0.031295580192663916
-        scale = 0.271584523255729
-        u = np.random.uniform(0.000001, 0.999999)
-        x = stats.recipinvgauss.ppf(u, mu, loc, scale)
-        if x > 0:
-            return redondear(x,5)
+    a = 1.2824763189951953
+    loc = 0.3529866902558564
+    scale = 2.7430708499927383
+    u = np.random.uniform(0.000001, 0.999999)
+    x = stats.erlang.ppf(u, a, loc, scale)
+    return x
 
 def ta_cable():
-    while True:
-        c = 1.6971927282569945
-        d = 2.0086650709449665
-        loc = -0.051670023524274175
-        scale = 5.382486631799211
-        u = np.random.uniform(0.000001, 0.999999)
-        x = stats.burr12.ppf(u, c, d, loc, scale)
-        if x > 0:
-            return redondear(x,5)
+    k = 1.120685328694003
+    s = 2.5868147327627664
+    loc = 0.36162384506728507
+    scale = 4.867007896499102
+    u = np.random.uniform(0.000001, 0.999999)
+    x = stats.mielke.ppf(u, k, s, loc, scale)
+    return x
+

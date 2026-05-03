@@ -18,30 +18,32 @@ llamadas_intmovil = llamadas[
     (llamadas["Cola"] == "tortu-imowi") &
     (llamadas["Estado"] != "FUERAHORARIO") &
     (llamadas["Estado"] != "ABANDONO") &
-    (llamadas["T. Atencion"] > 20)
+    (llamadas["TA_numerico"] > 20)
 ]
 
 llamadas_intmovil = llamadas_intmovil.dropna(subset=["TA_numerico"])
 
 llamadas_intmovil["TA_min"] = llamadas_intmovil["TA_numerico"] / 60
-
+print(llamadas_intmovil.value_counts())
 #Grafico histograma
 
-llamadas_intmovil.hist('TA_min', bins=200)
-plt.show()
+# llamadas_intmovil.hist('TA_min', bins=200)
+# plt.show()
 
 #Fdp TA Internet movil:
 
-fdp_telefonia_ta = Fitter(llamadas_intmovil.TA_min)
-fdp_telefonia_ta.fit()
-print(fdp_telefonia_ta.summary(3))
-print(fdp_telefonia_ta.get_best(method="sumsquare_error"))
+# fdp_internet_movil_ta = Fitter(llamadas_intmovil.TA_min)
+# fdp_internet_movil_ta.fit()
+# print(fdp_internet_movil_ta.summary(3))
+# print(fdp_internet_movil_ta.get_best(method="sumsquare_error"))
 
-# mu = 2.4831921870607196
-# loc = -0.031295580192663916
-# scale = 0.271584523255729
-#
-# fdp_internet_ta_recipinvgauss = stats.recipinvgauss.rvs(mu, loc, scale, 200)
+a = 1.2824763189951953
+loc = 0.3529866902558564
+scale = 2.7430708499927383
+
+fdp_internet_movil_ta_erlang = stats.erlang.rvs(a, loc, scale, 200)
+print(fdp_internet_movil_ta_erlang.min(), fdp_internet_movil_ta_erlang.max())
+
 #
 # plt.title("Histograma")
 # plt.xlabel("X axis")

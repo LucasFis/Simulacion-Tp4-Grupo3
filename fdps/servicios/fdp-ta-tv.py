@@ -17,48 +17,51 @@ llamadas["TA_numerico"] = pd.to_numeric(
 llamadas_tv = llamadas[
     (llamadas["Cola"] == "iptv") &
     (llamadas["Estado"] != "FUERAHORARIO") &
-    (llamadas["Estado"] != "ABANDONO")
+    (llamadas["Estado"] != "ABANDONO") &
+    (llamadas["TA_numerico"] > 20)
 ]
 
 llamadas_tv = llamadas_tv.dropna(subset=["TA_numerico"])
 
 llamadas_tv["TA_min"] = llamadas_tv["TA_numerico"] / 60
+print(llamadas_tv.value_counts())
 
 #Grafico histograma
 
-llamadas_tv.hist('TA_min', bins=200)
-plt.show()
+# llamadas_tv.hist('TA_min', bins=200)
+# plt.show()
 
 #Fdp TA Internet movil:
 
-fdp_tv_ta = Fitter(llamadas_tv.TA_min)
-fdp_tv_ta.fit()
-print(fdp_tv_ta.summary(3))
-print(fdp_tv_ta.get_best(method="sumsquare_error"))
+# fdp_tv_ta = Fitter(llamadas_tv.TA_min)
+# fdp_tv_ta.fit()
+# print(fdp_tv_ta.summary(3))
+# print(fdp_tv_ta.get_best(method="sumsquare_error"))
 
-c = 1.6971927282569945
-d = 2.0086650709449665
-loc = -0.051670023524274175
-scale = 5.382486631799211
+k = 1.120685328694003
+s = 2.5868147327627664
+loc = 0.36162384506728507
+scale = 4.867007896499102
 
-fdp_tv_ta_burr12= stats.burr12.rvs(c, d, loc, scale, 200)
+fdp_tv_ta_mielke = stats.mielke.rvs(k, s, loc, scale, 200)
+print(fdp_tv_ta_mielke.min(), fdp_tv_ta_mielke.max())
 
-plt.title("Histograma")
-plt.xlabel("X axis")
-plt.ylabel("Y axis")
-plt.xlim(0, 60)
-# plt.ylim(0, 1300)
-plt.hist(fdp_tv_ta_burr12, bins=200)
-plt.show()
+# plt.title("Histograma")
+# plt.xlabel("X axis")
+# plt.ylabel("Y axis")
+# plt.xlim(0, 60)
+# # plt.ylim(0, 1300)
+# plt.hist(fdp_tv_ta_burr12, bins=200)
+# plt.show()
 
 #Grafico continua
-x = np.linspace(0, 50, 500)
-
-y = stats.burr12.pdf(x, c, d, loc=loc, scale=scale)
-
-plt.plot(x, y)
-plt.title("Distribución burr12")
-plt.xlabel("Tiempo")
-plt.ylabel("Densidad")
-plt.grid(True)
-plt.show()
+# x = np.linspace(0, 50, 500)
+#
+# y = stats.burr12.pdf(x, c, d, loc=loc, scale=scale)
+#
+# plt.plot(x, y)
+# plt.title("Distribución burr12")
+# plt.xlabel("Tiempo")
+# plt.ylabel("Densidad")
+# plt.grid(True)
+# plt.show()

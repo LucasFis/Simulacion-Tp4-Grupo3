@@ -6,7 +6,7 @@ HV=51240412412
 
 #Tiempos
 T=0
-TF=36000 #Turno mañana
+TF=360 #Turno mañana
 
 #Var. control
 NINT = 1
@@ -44,9 +44,6 @@ NTTEL = 0
 NTTV = 0
 NTIM = 0
 
-#Contexto de ejecucion
-DIA = "L"
-TURNO = "M"
 
 #T.E.F.
 TPLL = 0
@@ -60,6 +57,65 @@ NSINT = 0
 NSTEL = 0
 NSTV = 0
 NSIM = 0
+
+def iniciar():
+    global T, TF, NINT, NTEL, NTV, NIM, TPLL, TPSINT, TPSTEL, TPSTV, TPSIM, NSINT, NSTEL, NSTV, NSIM
+    T=0
+    TF = 360  # Turno mañana
+
+    # Var. control
+    NINT = 1
+    NTEL = 1
+    NTV = 1
+    NIM = 1
+
+    global STLLINT, STLLTEL, STLLTV, STLLIM, STSINT, STSTEL, STSTV, STSIM, STOINT, STOTEL, STOTV, STOIM, ITOINT, ITOTEL, ITOTV, ITOIM, NTINT, NTTEL, NTTV, NTIM
+    # Estadisticas
+    STLLINT = 0
+    STLLTEL = 0
+    STLLTV = 0
+    STLLIM = 0
+
+    STSINT = 0
+    STSTEL = 0
+    STSTV = 0
+    STSIM = 0
+
+
+    global STAINT, STATEL, STATV, STAIM, NTINT, NTTEL, NTTV, NTIM
+    STAINT = 0
+    STATEL = 0
+    STATV = 0
+    STAIM = 0
+
+    STOINT = [0] * NINT
+    STOTEL = [0] * NTEL
+    STOTV = [0] * NTV
+    STOIM = [0] * NIM
+    ITOINT = [0] * NINT
+    ITOTEL = [0] * NTEL
+    ITOTV = [0] * NTV
+    ITOIM = [0] * NIM
+
+    NTINT = 0
+    NTTEL = 0
+    NTTV = 0
+    NTIM = 0
+
+    # T.E.F.
+    TPLL = 0
+    TPSINT = [HV] * NINT
+    TPSTEL = [HV] * NTEL
+    TPSTV = [HV] * NTV
+    TPSIM = [HV] * NIM
+
+    # Colas
+    NSINT = 0
+    NSTEL = 0
+    NSTV = 0
+    NSIM = 0
+
+
 
 def buscar_minimo(TPSArray):
     min_val = TPSArray[0]
@@ -286,7 +342,7 @@ def mostrar_resultados():
     for i in range(NINT):
         PTOINT[i] = redondear((STOINT[i] * 100) / T if T > 0 else 0,5)
 
-    print("\nInternet")
+    print("Internet")
     print(f"Promedio de espera en cola: {PECINT} minutos")
     for i in range(NINT):
         print(f"Puesto {i+1}: {PTOINT[i]} % ocioso")
@@ -299,7 +355,7 @@ def mostrar_resultados():
     for i in range(NTEL):
         PTOTEL[i] = redondear((STOTEL[i] * 100) / T if T > 0 else 0,5)
 
-    print("\nTelefonia")
+    print("Telefonia")
     print(f"Promedio de espera en cola: {PECTEL} minutos")
     for i in range(NTEL):
         print(f"Puesto {i+1}: {PTOTEL[i]} % ocioso")
@@ -312,7 +368,7 @@ def mostrar_resultados():
     for i in range(NTV):
         PTOTV[i] = redondear((STOTV[i] * 100) / T if T > 0 else 0,5)
 
-    print("\nTV")
+    print("Television")
     print(f"Promedio de espera en cola: {PECTV} minutos")
     for i in range(NTV):
         print(f"Puesto {i+1}: {PTOTV[i]} % ocioso")
@@ -326,12 +382,13 @@ def mostrar_resultados():
     for i in range(NIM):
         PTOSIM[i] = redondear((STOIM[i] * 100) / T if T > 0 else 0,5)
 
-    print("\nInternet Movil")
+    print("Internet Movil")
     print(f"Promedio de espera en cola: {PECSIM} minutos")
     for i in range(NIM):
         print(f"Puesto {i+1}: {PTOSIM[i]} % ocioso")
 
 def algoritmo_simulador():
+    iniciar()
     global T, TPLL, NSINT, NSTEL, NSTV, NSIM
     while True:
         evento, index = determinar_evento()
@@ -352,5 +409,29 @@ def algoritmo_simulador():
             else:
                 mostrar_resultados()
                 break
+#Contexto de ejecucion
+DIA = "L"
+TURNO = "M"
+print("\nLunes - Mañana")
+algoritmo_simulador()
 
+TURNO = "T"
+print("\nLunes - Tarde")
+algoritmo_simulador()
+
+TURNO = "N"
+print("\nLunes - Noche")
+algoritmo_simulador()
+
+DIA = "V"
+TURNO = "M"
+print("\nViernes - Mañana")
+algoritmo_simulador()
+
+TURNO = "M"
+print("\nViernes - Tarde")
+algoritmo_simulador()
+
+TURNO = "M"
+print("\nViernes - Noche")
 algoritmo_simulador()
