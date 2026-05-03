@@ -1,6 +1,9 @@
 import numpy as np
 from scipy import stats
 
+from elecciones import redondear
+
+
 def ia_lunes_maniana():
     while True:
         df = 0.6473329065381139
@@ -9,7 +12,7 @@ def ia_lunes_maniana():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.chi.ppf(u, df, loc, scale)
         if x > 0:
-            return x
+            return redondear(x,5)
 
 def ia_lunes_tarde():
     while True:
@@ -19,7 +22,7 @@ def ia_lunes_tarde():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.kappa3.ppf(u, a, loc, scale)
         if x > 0:
-            return x
+            return redondear(x,5)
 
 def ia_lunes_noche():
     while True:
@@ -30,7 +33,7 @@ def ia_lunes_noche():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.powerlognorm.ppf(u, c, s, loc, scale)
         if x > 0:
-            return x
+            return redondear(x,5)
 
 def ia_viernes_maniana():
     while True:
@@ -41,7 +44,7 @@ def ia_viernes_maniana():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.truncpareto.ppf(u, b, c, loc, scale)
         if x > 0:
-            return x
+            return redondear(x,5)
 
 def ia_viernes_tarde():
     while True:
@@ -51,7 +54,7 @@ def ia_viernes_tarde():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.nakagami.ppf(u, nu, loc, scale)
         if x > 0:
-            return x
+            return redondear(x,5)
 
 def ia_viernes_noche():
     while True:

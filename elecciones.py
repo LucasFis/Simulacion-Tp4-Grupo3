@@ -19,3 +19,10 @@ def se_arrepiente():
     r = random.random()
 
     return r < 0.1
+
+def redondear(valor, decimales):
+    factor = 10 ** decimales
+    if valor >= 0:
+        return int(valor * factor + 0.5) / factor
+    else:
+        return int(valor * factor - 0.5) / factor

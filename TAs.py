@@ -1,6 +1,9 @@
 import numpy as np
 from scipy import stats
 
+from elecciones import redondear
+
+
 def ta_internet():
     while True:
         a = -2.8996295458678
@@ -11,8 +14,8 @@ def ta_internet():
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.johnsonsu.ppf(u, a, b, loc, scale)
 
-        if x > 1:
-            return x
+        if x > 0:
+            return redondear(x,5)
 
 def ta_telefonia():
     while True:
@@ -24,8 +27,8 @@ def ta_telefonia():
         scale = 0.271584523255729
         z = np.random.uniform(0.000001, 0.999999)
         x = stats.dpareto_lognorm.ppf(z, u, s, a, b, loc, scale)
-        if x > 1:
-            return x
+        if x > 0:
+            return redondear(x,5)
 
 def ta_internet_movil():
     while True:
@@ -34,8 +37,8 @@ def ta_internet_movil():
         scale = 0.271584523255729
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.recipinvgauss.ppf(u, mu, loc, scale)
-        if x > 1:
-            return x
+        if x > 0:
+            return redondear(x,5)
 
 def ta_cable():
     while True:
@@ -45,5 +48,5 @@ def ta_cable():
         scale = 5.382486631799211
         u = np.random.uniform(0.000001, 0.999999)
         x = stats.burr12.ppf(u, c, d, loc, scale)
-        if x > 1:
-            return x
+        if x > 0:
+            return redondear(x,5)

@@ -1,12 +1,12 @@
 from TAs import ta_cable, ta_internet_movil, ta_internet, ta_telefonia
 from IAs import generar_intervalo_arribo
-from elecciones import eleccion_cola, elegir_puesto, se_arrepiente
+from elecciones import eleccion_cola, elegir_puesto, se_arrepiente, redondear
 
 HV=51240412412
 
 #Tiempos
 T=0
-TF=360 #Turno mañana
+TF=36000 #Turno mañana
 
 #Var. control
 NINT = 1
@@ -281,10 +281,10 @@ def mostrar_resultados():
     # -------- INTERNET --------
     global STLLINT, STSINT, STAINT, NTINT, NINT, STOINT
 
-    PECINT = (STSINT - STLLINT - STAINT) / NTINT if NTINT > 0 else 0
+    PECINT = redondear((STSINT - STLLINT - STAINT) / NTINT if NTINT > 0 else 0,5)
     PTOINT = [0] * NINT
     for i in range(NINT):
-        PTOINT[i] = (STOINT[i] * 100) / T if T > 0 else 0
+        PTOINT[i] = redondear((STOINT[i] * 100) / T if T > 0 else 0,5)
 
     print("\nInternet")
     print(f"Promedio de espera en cola: {PECINT} minutos")
@@ -294,10 +294,10 @@ def mostrar_resultados():
     # -------- TELEFONIA --------
     global STLLTEL, STSTEL, STATEL, NTTEL, NTEL, STOTEL
 
-    PECTEL = (STSTEL - STLLTEL - STATEL) / NTTEL if NTTEL > 0 else 0
+    PECTEL = redondear((STSTEL - STLLTEL - STATEL) / NTTEL if NTTEL > 0 else 0,5)
     PTOTEL = [0] * NTEL
     for i in range(NTEL):
-        PTOTEL[i] = (STOTEL[i] * 100) / T if T > 0 else 0
+        PTOTEL[i] = redondear((STOTEL[i] * 100) / T if T > 0 else 0,5)
 
     print("\nTelefonia")
     print(f"Promedio de espera en cola: {PECTEL} minutos")
@@ -307,10 +307,10 @@ def mostrar_resultados():
     # -------- TV --------
     global STLLTV, STSTV, STATV, NTTV, NTV, STOTV
 
-    PECTV = (STSTV - STLLTV - STATV) / NTTV if NTTV > 0 else 0
+    PECTV = redondear((STSTV - STLLTV - STATV) / NTTV if NTTV > 0 else 0,5)
     PTOTV = [0] * NTV
     for i in range(NTV):
-        PTOTV[i] = (STOTV[i] * 100) / T if T > 0 else 0
+        PTOTV[i] = redondear((STOTV[i] * 100) / T if T > 0 else 0,5)
 
     print("\nTV")
     print(f"Promedio de espera en cola: {PECTV} minutos")
@@ -321,10 +321,10 @@ def mostrar_resultados():
     # -------- SIM --------
     global STLLIM, STSIM, STAIM, NTIM, NIM, STOIM
 
-    PECSIM = (STSIM - STLLIM - STAIM) / NTIM if NTIM > 0 else 0
+    PECSIM = redondear((STSIM - STLLIM - STAIM) / NTIM if NTIM > 0 else 0,5)
     PTOSIM = [0] * NIM
     for i in range(NIM):
-        PTOSIM[i] = (STOIM[i] * 100) / T if T > 0 else 0
+        PTOSIM[i] = redondear((STOIM[i] * 100) / T if T > 0 else 0,5)
 
     print("\nInternet Movil")
     print(f"Promedio de espera en cola: {PECSIM} minutos")
@@ -348,7 +348,6 @@ def algoritmo_simulador():
 
         if not T <= TF:
             if NSINT > 0 or NSTEL > 0 or NSTV > 0 or NSIM > 0:
-                print("\nEN VACIAMIENTO\n")
                 TPLL = HV
             else:
                 mostrar_resultados()
