@@ -1,0 +1,21 @@
+import random
+
+def eleccion_cola():
+    r = random.random()  # número entre 0 y 1
+
+    if r < 0.6161:
+        return "INT"
+    elif r < 0.6161 + 0.1197:
+        return "TEL"
+    elif r < 0.6161 + 0.1197 + 0.1781:
+        return "TV"
+    else:
+        return "SIM"
+
+def elegir_puesto(TPS):
+    return 0
+
+def se_arrepiente():
+    r = random.random()
+
+    return r < 0.1
