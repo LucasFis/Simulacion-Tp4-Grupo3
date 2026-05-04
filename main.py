@@ -81,6 +81,10 @@ def buscar_minimo(TPSArray):
 
     return min_index
 
+def calcular_porcentaje_abandono(arrepentidos, atendidos):
+    total = atendidos + arrepentidos
+    return arrepentidos * 100 / total if total > 0 else 0
+
 def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
     ctx = Contexto(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
 
@@ -164,7 +168,7 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
             ctx.NTTEL += 1
         else:
             ctx.NSTEL -= 1
-            ctx.SarrTV += 1
+            ctx.SarrTel += 1
 
     def manejar_llegada_cable():
         ctx.NSTV += 1
@@ -266,51 +270,53 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
         # -------- INTERNET --------
         PECINT = redondear((ctx.STSINT - ctx.STLLINT - ctx.STAINT) / ctx.NTINT if ctx.NTINT > 0 else 0, 5)
         PTOINT = [0] * ctx.NINT
-        PARRINT = ctx.SarrInt * 100 / (ctx.NTINT + ctx.SarrInt)
+        PARRINT = calcular_porcentaje_abandono(ctx.SarrInt, ctx.NTINT)
         for i in range(ctx.NINT):
             PTOINT[i] = redondear((ctx.STOINT[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-        stats.append(Stat(PECINT, PTOINT, PARRINT, "Internet", ctx.NINT))
+        stats.append(Stat(PECINT, PTOINT, PARRINT, "Internet", ctx.NINT, ctx.NTINT, ctx.SarrInt))
 
         # -------- TELEFONIA --------
 
         PECTEL = redondear((ctx.STSTEL - ctx.STLLTEL - ctx.STATEL) / ctx.NTTEL if ctx.NTTEL > 0 else 0, 5)
         PTOTEL = [0] * ctx.NTEL
-        PARRTEL = ctx.SarrTel * 100 / (ctx.NTTEL + ctx.SarrTel)
+        PARRTEL = calcular_porcentaje_abandono(ctx.SarrTel, ctx.NTTEL)
         for i in range(ctx.NTEL):
             PTOTEL[i] = redondear((ctx.STOTEL[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-        stats.append(Stat(PECTEL, PTOTEL, PARRTEL, "Telefonia", ctx.NTEL))
+        stats.append(Stat(PECTEL, PTOTEL, PARRTEL, "Telefonia", ctx.NTEL, ctx.NTTEL, ctx.SarrTel))
 
         # -------- TV --------
 
         PECTV = redondear((ctx.STSTV - ctx.STLLTV - ctx.STATV) / ctx.NTTV if ctx.NTTV > 0 else 0, 5)
         PTOTV = [0] * ctx.NTV
-        PARRTV = ctx.SarrTV * 100 / (ctx.NTTV + ctx.SarrTV)
+        PARRTV = calcular_porcentaje_abandono(ctx.SarrTV, ctx.NTTV)
         for i in range(ctx.NTV):
             PTOTV[i] = redondear((ctx.STOTV[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-        stats.append(Stat(PECTV, PTOTV, PARRTV, "Television", ctx.NTV))
+        stats.append(Stat(PECTV, PTOTV, PARRTV, "Television", ctx.NTV, ctx.NTTV, ctx.SarrTV))
 
         # -------- IM --------
 
         PECSIM = redondear((ctx.STSIM - ctx.STLLIM - ctx.STAIM) / ctx.NTIM if ctx.NTIM > 0 else 0, 5)
         PTOSIM = [0] * ctx.NIM
-        PARRIM = ctx.SarrIM * 100 / (ctx.NTIM + ctx.SarrIM)
+        PARRIM = calcular_porcentaje_abandono(ctx.SarrIM, ctx.NTIM)
         for i in range(ctx.NIM):
             PTOSIM[i] = redondear((ctx.STOIM[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-        stats.append(Stat(PECSIM, PTOSIM, PARRIM, "Internet movil", ctx.NIM))
+        stats.append(Stat(PECSIM, PTOSIM, PARRIM, "Internet movil", ctx.NIM, ctx.NTIM, ctx.SarrIM))
 
         return stats
 
     class Stat:
-        def __init__(self, PEC, PTO, PARR, servicio, var_control):
+        def __init__(self, PEC, PTO, PARR, servicio, var_control, clientes, arrepentidos):
             self.PEC = PEC
             self.PTO = PTO
             self.PARR = PARR
             self.servicio = servicio
             self.control = var_control
+            self.clientes = clientes
+            self.arrepentidos = arrepentidos
 
         def __str__(self):
             string = f"Servicio: {self.servicio}"
@@ -347,11 +353,17 @@ def dar_mejor_contexto(estadisticas):
     def score(contexto):
         stats = contexto["stats"]
 
-        total_PARR = sum(s.PARR for s in stats)*100 # porcentaje
-        total_PEC = sum(s.PEC for s in stats)/0.5 # minutos
-        total_PTO = sum(sum(s.PTO) for s in stats)/50 # porcentaje
+        demanda = {
+            "Internet": 0.6161,
+            "Telefonia": 0.1197,
+            "Television": 0.1781,
+            "Internet movil": 0.0861
+        }
 
-        return total_PARR * 0.5 + total_PEC * 3 + total_PTO * 5
+        total_PARR = sum(s.PARR * demanda[s.servicio] for s in stats) # porcentaje
+        total_PEC = sum(s.PEC * demanda[s.servicio] for s in stats) # minutos
+
+        return total_PARR * 0.5 + total_PEC * 3
 
     for contexto in estadisticas:
         if score(contexto) < score(mejor):
@@ -359,8 +371,44 @@ def dar_mejor_contexto(estadisticas):
 
     return mejor
 
+def simular_promedio(cInt, cTel, cTv, cIm, TF, DIA, TURNO, repeticiones):
+    stats_promedio = simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
+
+    acumulados = {
+        stat.servicio: {
+            "PEC": stat.PEC,
+            "PARR": stat.PARR,
+            "PTO": stat.PTO[:],
+            "clientes": stat.clientes,
+            "arrepentidos": stat.arrepentidos
+        }
+        for stat in stats_promedio
+    }
+
+    for _ in range(repeticiones - 1):
+        for stat in simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
+            acumulado = acumulados[stat.servicio]
+            acumulado["PEC"] += stat.PEC
+            acumulado["PARR"] += stat.PARR
+            acumulado["clientes"] += stat.clientes
+            acumulado["arrepentidos"] += stat.arrepentidos
+            for i in range(len(stat.PTO)):
+                acumulado["PTO"][i] += stat.PTO[i]
+
+    for stat in stats_promedio:
+        acumulado = acumulados[stat.servicio]
+        stat.PEC = redondear(acumulado["PEC"] / repeticiones, 5)
+        stat.PARR = redondear(acumulado["PARR"] / repeticiones, 5)
+        stat.clientes = acumulado["clientes"]
+        stat.arrepentidos = acumulado["arrepentidos"]
+        for i in range(len(stat.PTO)):
+            stat.PTO[i] = redondear(acumulado["PTO"][i] / repeticiones, 5)
+
+    return stats_promedio
+
 estadisticas = []
 mejor_stat_lunes = None
+REPETICIONES = 30
 print("\nLunes - Mañana")
 for n_int in range(1,4):
     for n_tel in range(1,4):
@@ -371,7 +419,7 @@ for n_int in range(1,4):
                 else:
                     estadisticas.append({
                         "config": (n_int, n_tel, n_tv, n_im),
-                        "stats": simular(n_int, n_tel, n_tv, n_im, 360, "L", "M")
+                        "stats": simular_promedio(n_int, n_tel, n_tv, n_im, 360, "L", "M", REPETICIONES)
                     })
 
 mejor = dar_mejor_contexto(estadisticas)
