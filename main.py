@@ -160,6 +160,7 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
             ctx.TPSTEL[j] = ctx.T + ta_tel
             ctx.NTTEL += 1
         elif not se_arrepiente():
+            ctx.STLLTEL += ctx.T
             ctx.NTTEL += 1
         else:
             ctx.NSTEL -= 1
@@ -275,7 +276,7 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
 
         PECTEL = redondear((ctx.STSTEL - ctx.STLLTEL - ctx.STATEL) / ctx.NTTEL if ctx.NTTEL > 0 else 0, 5)
         PTOTEL = [0] * ctx.NTEL
-        PARRTEL = ctx.SarrTel * 100 / (ctx.NTINT + ctx.SarrTel)
+        PARRTEL = ctx.SarrTel * 100 / (ctx.NTTEL + ctx.SarrTel)
         for i in range(ctx.NTEL):
             PTOTEL[i] = redondear((ctx.STOTEL[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
@@ -285,7 +286,7 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
 
         PECTV = redondear((ctx.STSTV - ctx.STLLTV - ctx.STATV) / ctx.NTTV if ctx.NTTV > 0 else 0, 5)
         PTOTV = [0] * ctx.NTV
-        PARRTV = ctx.SarrTV * 100 / (ctx.NTINT + ctx.SarrTV)
+        PARRTV = ctx.SarrTV * 100 / (ctx.NTTV + ctx.SarrTV)
         for i in range(ctx.NTV):
             PTOTV[i] = redondear((ctx.STOTV[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
@@ -295,7 +296,7 @@ def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
 
         PECSIM = redondear((ctx.STSIM - ctx.STLLIM - ctx.STAIM) / ctx.NTIM if ctx.NTIM > 0 else 0, 5)
         PTOSIM = [0] * ctx.NIM
-        PARRIM = ctx.SarrIM * 100 / (ctx.NTINT + ctx.SarrIM)
+        PARRIM = ctx.SarrIM * 100 / (ctx.NTIM + ctx.SarrIM)
         for i in range(ctx.NIM):
             PTOSIM[i] = redondear((ctx.STOIM[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
@@ -346,11 +347,11 @@ def dar_mejor_contexto(estadisticas):
     def score(contexto):
         stats = contexto["stats"]
 
-        total_PARR = sum(s.PARR for s in stats)/100
-        total_PEC = sum(s.PEC for s in stats)/20 #minutos ajustable
-        total_PTO = sum(sum(s.PTO) for s in stats)/100
+        total_PARR = sum(s.PARR for s in stats)*100 # porcentaje
+        total_PEC = sum(s.PEC for s in stats)/0.5 # minutos
+        total_PTO = sum(sum(s.PTO) for s in stats)/100 # porcentaje
 
-        return total_PARR * 2 + total_PEC *  + total_PTO
+        return total_PARR * 2 + total_PEC * 3 + total_PTO
 
     for contexto in estadisticas:
         if score(contexto) < score(mejor):
@@ -358,63 +359,65 @@ def dar_mejor_contexto(estadisticas):
 
     return mejor
 
-# estadisticas = []
-# mejor_stat_lunes = None
-# print("\nLunes - Mañana")
-# for n_int in range(1,4):
-#     for n_tel in range(1,4):
-#         for n_tv in range(1,4):
-#             for n_im in range(1,4):
-#                 if n_int + n_tel + n_tv + n_im > 7:
-#                     continue
-#                 else:
-#                     estadisticas.append({
-#                         "config": (n_int, n_tel, n_tv, n_im),
-#                         "stats": simular(n_int, n_tel, n_tv, n_im, 360, "L", "M")
-#                     })
-#
-# mejor = dar_mejor_contexto(estadisticas)
-#
-# print("Mejor configuración:")
-# print(f"INT={mejor['config'][0]}, TEL={mejor['config'][1]}, TV={mejor['config'][2]}, IM={mejor['config'][3]}")
-#
-# for stat in mejor["stats"]:
-#     print(stat)
-#
-largo_plazo = simular(2, 1, 1, 1, 360, "L", "M")
+estadisticas = []
+mejor_stat_lunes = None
+print("\nLunes - Mañana")
+for n_int in range(1,4):
+    for n_tel in range(1,4):
+        for n_tv in range(1,4):
+            for n_im in range(1,4):
+                if n_int + n_tel + n_tv + n_im > 7:
+                    continue
+                else:
+                    estadisticas.append({
+                        "config": (n_int, n_tel, n_tv, n_im),
+                        "stats": simular(n_int, n_tel, n_tv, n_im, 360, "V", "M")
+                    })
 
-for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
-    for stat in largo_plazo:
-        if stat.servicio == servicio:
-            print(stat)
+mejor = dar_mejor_contexto(estadisticas)
+
+print("Mejor configuración:")
+print(f"INT={mejor['config'][0]}, TEL={mejor['config'][1]}, TV={mejor['config'][2]}, IM={mejor['config'][3]}")
+
+for stat in mejor["stats"]:
+    print(stat)
+
+
+# stats_repeticion = []
+# iteraciones = 10
+#
+# for i in range(iteraciones):
+#     stats_repeticion.append(simular(2, 1, 1, 1, 360, "L", "M"))
+#
+# for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
+#     suma_pec = 0
+#     suma_parr = 0
+#     suma_pto = 0
+#
+#     for simulacion in stats_repeticion:      # cada simulacion es una lista de Stat
+#         for stat in simulacion:
+#             if stat.servicio == servicio:
+#                 suma_pec += stat.PEC
+#                 suma_parr += stat.PARR
+#                 suma_pto += sum(stat.PTO) / len(stat.PTO)
+#
+#     print(f"\nServicio: {servicio}")
+#     print(f"Espera por persona: {math.floor(suma_pec/iteraciones)}:{math.floor((suma_pec/iteraciones - math.floor(suma_pec/iteraciones))*60)} (minutos:segundos)")
+#     print(f"Abandono de llamada: {redondear(suma_parr / iteraciones,2)} %")
+#     print(f"Tiempo ocioso: {redondear(suma_pto / iteraciones,2)} %")
+
+
+
+
+# largo_plazo = simular(2, 1, 1, 1, 360, "L", "M")
+#
+# for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
+#     for stat in largo_plazo:
+#         if stat.servicio == servicio:
+#             print(stat)
 
 # TURNO = "T"
 # TF=210
-# print("\nLunes - Tarde")
-# for stat in simular(1,1,1,1):
-#     print(stat)
-#
+
 # TURNO = "N"
 # TF=300
-# print("\nLunes - Noche")
-# for stat in simular(1,1,1,1):
-#     print(stat)
-#
-# DIA = "V"
-# TURNO = "M"
-# TF=360
-# print("\nViernes - Mañana")
-# for stat in simular(1,1,1,1):
-#     print(stat)
-#
-# TURNO = "T"
-# TF=210
-# print("\nViernes - Tarde")
-# for stat in simular(1,1,1,1):
-#     print(stat)
-#
-# TURNO = "N"
-# TF=300
-# print("\nViernes - Noche")
-# for stat in simular(1,1,1,1):
-#     print(stat + "\n")

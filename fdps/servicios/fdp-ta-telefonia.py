@@ -39,16 +39,14 @@ print(llamadas_telefonia.value_counts())
 #print(fdp_telefonia_ta.summary(3))
 #print(fdp_telefonia_ta.get_best(method="sumsquare_error"))
 
-u = 2.4831921870607196
-s = 0.5248640126200628
 a = 0.25272397442857464
 b = 0.9149481236528247
 c = 1.965332216326705
 loc = 0.4166666624026105
 scale = 2.1216173497193322
 
-fdp_internet_ta_dpareto_lognorm = stats.genexpon.rvs(a, b, c, loc, scale, 300)
-print(fdp_internet_ta_dpareto_lognorm.min(), fdp_internet_ta_dpareto_lognorm.max())
+fdp_internet_ta_genexpon = stats.genexpon.rvs(a, b, c, loc, scale, 300)
+print(fdp_internet_ta_genexpon.min(), fdp_internet_ta_genexpon.max())
 
 #plt.title("Histograma")
 #plt.xlabel("X axis")
@@ -59,14 +57,14 @@ print(fdp_internet_ta_dpareto_lognorm.min(), fdp_internet_ta_dpareto_lognorm.max
 #plt.show()
 
 #Grafico continua
-# x = np.linspace(0, 50, 500)
+x = np.linspace(0, 50, 500)
 
-# y = stats.dpareto_lognorm.pdf(x, u, s,a, b, loc=loc, scale=scale)
-#
-# plt.plot(x, y)
-# plt.title("Distribución dpareto_lognorm")
-# plt.xlabel("Tiempo")
-# plt.ylabel("Densidad")
-# plt.grid(True)
-# plt.show()
+y = stats.genexpon.cdf(x, a, b, c, loc=loc, scale=scale)
+
+plt.plot(x, y)
+plt.title("Distribución")
+plt.xlabel("Tiempo")
+plt.ylabel("Densidad")
+plt.grid(True)
+plt.show()
 

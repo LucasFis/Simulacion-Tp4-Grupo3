@@ -15,6 +15,8 @@ def eleccion_cola():
 def elegir_puesto(TPS, STO, HV):
     libres = [i for i in range(len(TPS)) if TPS[i] == HV]
 
+
+
     return max(libres, key=lambda i: STO[i])
 
 def se_arrepiente():
