@@ -2,7 +2,7 @@ import math
 
 from TAs import ta_cable, ta_internet_movil, ta_internet, ta_telefonia
 from IAs import generar_intervalo_arribo
-from elecciones import eleccion_cola, elegir_puesto, se_arrepiente, redondear
+from elecciones import eleccion_servicio, elegir_puesto, se_arrepiente, redondear
 
 class Contexto:
     def __init__(self, cInt, cTel, cTv, cIm, TF, DIA, TURNO):
@@ -122,7 +122,7 @@ def simular_puestos(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
 
         ctx.TPLL = ctx.T + IA
 
-        c = eleccion_cola()
+        c = eleccion_servicio()
 
         if c == "INT":
             manejar_llegada_internet()
@@ -447,24 +447,26 @@ stats_repeticion = []
 iteraciones = 10
 
 for i in range(iteraciones):
-    stats_repeticion.append(simular_puestos(1, 1, 1, 1, 360, "L", "T"))
+    stats_repeticion.append(simular_puestos(2, 1, 2, 1, 360, "V", "M"))
 
 for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
     suma_pec = 0
     suma_parr = 0
-    suma_pto = 0
+    suma_pto = [0]*10
 
     for simulacion in stats_repeticion:      # cada simulacion es una lista de Stat
         for stat in simulacion:
             if stat.servicio == servicio:
                 suma_pec += stat.PEC
                 suma_parr += stat.PARR
-                suma_pto += sum(stat.PTO) / len(stat.PTO)
+                for i in range(len(stat.PTO)):
+                    suma_pto[i] += stat.PTO[i]
 
     print(f"\nServicio: {servicio}")
     print(f"Espera por persona: {math.floor(suma_pec/iteraciones)}:{math.floor((suma_pec/iteraciones - math.floor(suma_pec/iteraciones))*60)} (minutos:segundos)")
     print(f"Abandono de llamada: {redondear(suma_parr / iteraciones,2)} %")
-    print(f"Tiempo ocioso: {redondear(suma_pto / iteraciones,2)} %")
+    for i in range(len(suma_pto)):
+        print(f"Tiempo ocioso: {redondear(suma_pto[i] / iteraciones,2)} %")
 
 # probar_optimo("L", "M", 4)
 # probar_optimo("V", "M", 4)
