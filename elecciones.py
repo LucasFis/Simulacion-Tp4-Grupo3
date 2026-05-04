@@ -3,14 +3,14 @@ import random
 def eleccion_cola():
     r = random.random()  # número entre 0 y 1
 
-    if r < 0.6161:
+    if r < 0.568:
         return "INT"
-    elif r < 0.6161 + 0.1197:
-        return "TEL"
-    elif r < 0.6161 + 0.1197 + 0.1781:
+    elif r < 0.568 + 0.255:
         return "TV"
+    elif r < 0.568 + 0.255 + 0.105:
+        return "TEL"
     else:
-        return "SIM"
+        return "IM"
 
 def elegir_puesto(TPS, STO, HV):
     libres = [i for i in range(len(TPS)) if TPS[i] == HV]
