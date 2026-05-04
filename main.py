@@ -428,10 +428,10 @@ TURNO = "M"
 print("\nViernes - Mañana")
 algoritmo_simulador()
 
-TURNO = "M"
+TURNO = "T"
 print("\nViernes - Tarde")
 algoritmo_simulador()
 
-TURNO = "M"
+TURNO = "N"
 print("\nViernes - Noche")
 algoritmo_simulador()
