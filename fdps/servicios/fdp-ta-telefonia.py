@@ -50,17 +50,17 @@ scale = 2.1216173497193322
 fdp_internet_ta_dpareto_lognorm = stats.genexpon.rvs(a, b, c, loc, scale, 300)
 print(fdp_internet_ta_dpareto_lognorm.min(), fdp_internet_ta_dpareto_lognorm.max())
 
-# plt.title("Histograma")
-# plt.xlabel("X axis")
-# plt.ylabel("Y axis")
-# plt.xlim(0, 60)
-# # plt.ylim(0, 1300)
-# plt.hist(fdp_internet_ta_dpareto_lognorm, bins=200)
-# plt.show()
-#
-# #Grafico continua
+#plt.title("Histograma")
+#plt.xlabel("X axis")
+#plt.ylabel("Y axis")
+#plt.xlim(0, 20)
+#plt.ylim(0, 300)
+#plt.hist(fdp_internet_ta_dpareto_lognorm, bins=200)
+#plt.show()
+
+#Grafico continua
 # x = np.linspace(0, 50, 500)
-#
+
 # y = stats.dpareto_lognorm.pdf(x, u, s,a, b, loc=loc, scale=scale)
 #
 # plt.plot(x, y)

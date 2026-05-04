@@ -1,121 +1,74 @@
+import math
+
 from TAs import ta_cable, ta_internet_movil, ta_internet, ta_telefonia
 from IAs import generar_intervalo_arribo
 from elecciones import eleccion_cola, elegir_puesto, se_arrepiente, redondear
 
-HV=51240412412
+class Contexto:
+    def __init__(self, cInt, cTel, cTv, cIm, TF, DIA, TURNO):
+        self.HV = 51240412412
 
-#Tiempos
-T=0
-TF=360 #Turno mañana
+        # Tiempos
+        self.T = 0
+        self.TF = TF
 
-#Var. control
-NINT = 1
-NTEL = 1
-NTV = 1
-NIM = 1
+        #Ambiente
+        self.DIA = DIA
+        self.TURNO = TURNO
 
-#Estadisticas
-STLLINT = 0
-STLLTEL = 0
-STLLTV = 0
-STLLIM = 0
+        # Servidores
+        self.NINT = cInt
+        self.NTEL = cTel
+        self.NTV = cTv
+        self.NIM = cIm
 
-STSINT = 0
-STSTEL = 0
-STSTV = 0
-STSIM = 0
+        # Estadísticas
+        self.STLLINT = 0
+        self.STLLTEL = 0
+        self.STLLTV = 0
+        self.STLLIM = 0
 
-STAINT = 0
-STATEL = 0
-STATV = 0
-STAIM = 0
+        self.STSINT = 0
+        self.STSTEL = 0
+        self.STSTV = 0
+        self.STSIM = 0
 
-STOINT = [0] * NINT
-STOTEL = [0] * NTEL
-STOTV = [0] * NTV
-STOIM = [0] * NIM
-ITOINT = [0] * NINT
-ITOTEL = [0] * NTEL
-ITOTV = [0] * NTV
-ITOIM = [0] * NIM
+        self.STAINT = 0
+        self.STATEL = 0
+        self.STATV = 0
+        self.STAIM = 0
 
-NTINT = 0
-NTTEL = 0
-NTTV = 0
-NTIM = 0
+        # Ocupación
+        self.STOINT = [0] * self.NINT
+        self.STOTEL = [0] * self.NTEL
+        self.STOTV = [0] * self.NTV
+        self.STOIM = [0] * self.NIM
+        self.ITOINT = [0] * self.NINT
+        self.ITOTEL = [0] * self.NTEL
+        self.ITOTV = [0] * self.NTV
+        self.ITOIM = [0] * self.NIM
+        self.NTINT = 0
+        self.NTTEL = 0
+        self.NTTV = 0
+        self.NTIM = 0
 
+        # Eventos futuros
+        self.TPLL = 0
+        self.TPSINT = [self.HV] * self.NINT
+        self.TPSTEL = [self.HV] * self.NTEL
+        self.TPSTV = [self.HV] * self.NTV
+        self.TPSIM = [self.HV] * self.NIM
 
-#T.E.F.
-TPLL = 0
-TPSINT = [HV] * NINT
-TPSTEL = [HV] * NTEL
-TPSTV = [HV] * NTV
-TPSIM = [HV] * NIM
+        # Colas
+        self.NSINT = 0
+        self.NSTEL = 0
+        self.NSTV = 0
+        self.NSIM = 0
 
-#Colas
-NSINT = 0
-NSTEL = 0
-NSTV = 0
-NSIM = 0
-
-def iniciar():
-    global T, TF, NINT, NTEL, NTV, NIM, TPLL, TPSINT, TPSTEL, TPSTV, TPSIM, NSINT, NSTEL, NSTV, NSIM
-    T=0
-    TF = 360  # Turno mañana
-
-    # Var. control
-    NINT = 1
-    NTEL = 1
-    NTV = 1
-    NIM = 1
-
-    global STLLINT, STLLTEL, STLLTV, STLLIM, STSINT, STSTEL, STSTV, STSIM, STOINT, STOTEL, STOTV, STOIM, ITOINT, ITOTEL, ITOTV, ITOIM, NTINT, NTTEL, NTTV, NTIM
-    # Estadisticas
-    STLLINT = 0
-    STLLTEL = 0
-    STLLTV = 0
-    STLLIM = 0
-
-    STSINT = 0
-    STSTEL = 0
-    STSTV = 0
-    STSIM = 0
-
-
-    global STAINT, STATEL, STATV, STAIM, NTINT, NTTEL, NTTV, NTIM
-    STAINT = 0
-    STATEL = 0
-    STATV = 0
-    STAIM = 0
-
-    STOINT = [0] * NINT
-    STOTEL = [0] * NTEL
-    STOTV = [0] * NTV
-    STOIM = [0] * NIM
-    ITOINT = [0] * NINT
-    ITOTEL = [0] * NTEL
-    ITOTV = [0] * NTV
-    ITOIM = [0] * NIM
-
-    NTINT = 0
-    NTTEL = 0
-    NTTV = 0
-    NTIM = 0
-
-    # T.E.F.
-    TPLL = 0
-    TPSINT = [HV] * NINT
-    TPSTEL = [HV] * NTEL
-    TPSTV = [HV] * NTV
-    TPSIM = [HV] * NIM
-
-    # Colas
-    NSINT = 0
-    NSTEL = 0
-    NSTV = 0
-    NSIM = 0
-
-
+        self.SarrInt = 0
+        self.SarrTV = 0
+        self.SarrIM = 0
+        self.SarrTel = 0
 
 def buscar_minimo(TPSArray):
     min_val = TPSArray[0]
@@ -128,268 +81,246 @@ def buscar_minimo(TPSArray):
 
     return min_index
 
-def determinar_evento():
-    global T
+def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
+    ctx = Contexto(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
 
-    eventos = []
+    def determinar_evento():
 
-    eventos.append(("LL", TPLL, None))
+        eventos = []
 
-    if TPSINT:
-        i_int = buscar_minimo(TPSINT)
-        eventos.append(("SINT", TPSINT[i_int], i_int))
+        eventos.append(("LL", ctx.TPLL, None))
 
-    if TPSTEL:
-        i_tel = buscar_minimo(TPSTEL)
-        eventos.append(("STEL", TPSTEL[i_tel], i_tel))
+        if ctx.TPSINT:
+            i_int = buscar_minimo(ctx.TPSINT)
+            eventos.append(("SINT", ctx.TPSINT[i_int], i_int))
 
-    if TPSTV:
-        i_tv = buscar_minimo(TPSTV)
-        eventos.append(("STV", TPSTV[i_tv], i_tv))
+        if ctx.TPSTEL:
+            i_tel = buscar_minimo(ctx.TPSTEL)
+            eventos.append(("STEL", ctx.TPSTEL[i_tel], i_tel))
 
-    if TPSIM:
-        i_sim = buscar_minimo(TPSIM)
-        eventos.append(("SIM", TPSIM[i_sim], i_sim))
+        if ctx.TPSTV:
+            i_tv = buscar_minimo(ctx.TPSTV)
+            eventos.append(("STV", ctx.TPSTV[i_tv], i_tv))
 
-    tipo, tiempo, index = min(eventos, key=lambda x: x[1])
+        if ctx.TPSIM:
+            i_sim = buscar_minimo(ctx.TPSIM)
+            eventos.append(("SIM", ctx.TPSIM[i_sim], i_sim))
 
-    return tipo, index
+        tipo, tiempo, index = min(eventos, key=lambda x: x[1])
 
-# ------ COMIENZO LLEGADAS -----------
-def operar_llegada():
-    global T
-    global TPLL
-    T = TPLL
+        return tipo, index
 
-    IA = generar_intervalo_arribo(DIA, TURNO)
+    # ------ COMIENZO LLEGADAS -----------
+    def operar_llegada():
+        ctx.T = ctx.TPLL
 
-    TPLL = T + IA
+        IA = generar_intervalo_arribo(ctx.DIA, ctx.TURNO)
 
-    c = eleccion_cola()
+        ctx.TPLL = ctx.T + IA
 
-    if c == "INT":
-        manejar_llegada_internet()
-    elif c == "TEL":
-        manejar_llegada_telefonia()
-    elif c == "TV":
-        manejar_llegada_cable()
-    else:
-        manejar_llegada_internet_movil()
+        c = eleccion_cola()
 
-def manejar_llegada_internet():
-    global T, STLLINT, NSINT, STOINT, STAINT, TPSINT, NTINT
+        if c == "INT":
+            manejar_llegada_internet()
+        elif c == "TEL":
+            manejar_llegada_telefonia()
+        elif c == "TV":
+            manejar_llegada_cable()
+        else:
+            manejar_llegada_internet_movil()
 
-    NSINT += 1
+    def manejar_llegada_internet():
+        ctx.NSINT += 1
 
-    if NSINT <= NINT:
-        STLLINT += T
+        if ctx.NSINT <= ctx.NINT:
+            ctx.STLLINT += ctx.T
 
-        j = elegir_puesto(TPSINT) #Eleccion ciclica
-        STOINT[j] += T-ITOINT[j]
-        ta_int = ta_internet()
-        STAINT += ta_int
-        TPSINT[j] = T+ta_int
-        NTINT += 1
-    elif not se_arrepiente():
-        STLLINT += T
-        NTINT += 1
-    else:
-        NSINT -= 1
+            j = elegir_puesto(ctx.TPSINT, ctx.STOINT, ctx.HV)
+            ctx.STOINT[j] += ctx.T - ctx.ITOINT[j]
+            ta_int = ta_internet()
+            ctx.STAINT += ta_int
+            ctx.TPSINT[j] = ctx.T + ta_int
+            ctx.NTINT += 1
+        elif not se_arrepiente():
+            ctx.STLLINT += ctx.T
+            ctx.NTINT += 1
+        else:
+            ctx.NSINT -= 1
+            ctx.SarrInt += 1
 
+    def manejar_llegada_telefonia():
+        ctx.NSTEL += 1
 
-def manejar_llegada_telefonia():
-    global T, STLLTEL, NSTEL, STOTEL, STATEL, TPSTEL, NTTEL
+        if ctx.NSTEL <= ctx.NTEL:
+            ctx.STLLTEL += ctx.T
+            j = elegir_puesto(ctx.TPSTEL, ctx.STOTEL, ctx.HV)
+            ctx.STOTEL[j] += ctx.T - ctx.ITOTEL[j]
+            ta_tel = ta_telefonia()
+            ctx.STATEL += ta_tel
+            ctx.TPSTEL[j] = ctx.T + ta_tel
+            ctx.NTTEL += 1
+        elif not se_arrepiente():
+            ctx.NTTEL += 1
+        else:
+            ctx.NSTEL -= 1
+            ctx.SarrTV += 1
 
-    NSTEL += 1
+    def manejar_llegada_cable():
+        ctx.NSTV += 1
 
-    if NSTEL <= NTEL:
-        STLLTEL += T
-        j = elegir_puesto(TPSTEL)
-        STOTEL[j] += T-ITOTEL[j]
-        ta_tel = ta_telefonia()
-        STATEL += ta_tel
-        TPSTEL[j] = T + ta_tel
-        NTTEL += 1
-    elif not se_arrepiente():
-        NTTEL += 1
-    else:
-        NSTEL -=1
+        if ctx.NSTV <= ctx.NTV:
+            ctx.STLLTV += ctx.T
 
-def manejar_llegada_cable():
-    global T, STLLTV, NSTV, STOTV, STATV, TPSTV, NTTV
-    NSTV += 1
+            j = elegir_puesto(ctx.TPSTV, ctx.STOTV, ctx.HV)
+            ctx.STOTV[j] += ctx.T - ctx.ITOTV[j]
+            ta_tv = ta_cable()
+            ctx.STATV += ta_tv
+            ctx.TPSTV[j] = ctx.T + ta_tv
+            ctx.NTTV += 1
+        elif not se_arrepiente():
+            ctx.STLLTV += ctx.T
+            ctx.NTTV += 1
+        else:
+            ctx.NSTV -= 1
+            ctx.SarrTV += 1
 
-    if NSTV <= NTV:
-        STLLTV += T
+    def manejar_llegada_internet_movil():
 
-        j = elegir_puesto(TPSTV)
-        STOTV[j] += T - ITOTV[j]
-        ta_tv = ta_cable()
-        STATV += ta_tv
-        TPSTV[j] = T + ta_tv
-        NTTV += 1
-    elif not se_arrepiente():
-        STLLTV += T
-        NTTV += 1
-    else:
-        NSTV -=1
+        ctx.NSIM += 1
 
-def manejar_llegada_internet_movil():
-    global T, STLLIM, NSIM, STOIM, STAIM, TPSIM, NTIM
+        if ctx.NSIM <= ctx.NIM:
+            ctx.STLLIM += ctx.T
+            j = elegir_puesto(ctx.TPSIM, ctx.STOIM, ctx.HV)
+            ctx.STOIM[j] += ctx.T - ctx.ITOIM[j]
+            ta_sim = ta_internet_movil()
+            ctx.STAIM += ta_sim
+            ctx.TPSIM[j] = ctx.T + ta_sim
+            ctx.NTIM += 1
 
-    NSIM += 1
+        elif not se_arrepiente():
+            ctx.STLLIM += ctx.T
+            ctx.NTIM += 1
+        else:
+            ctx.NSIM -= 1
+            ctx.SarrIM += 1
 
-    if NSIM <= NIM:
-        STLLIM += T
-        j = elegir_puesto(TPSIM)
-        STOIM[j] += T - ITOIM[j]
-        ta_sim = ta_internet_movil()
-        STAIM += ta_sim
-        TPSIM[j] = T + ta_sim
-        NTIM += 1
+    # ------ COMIENZO SALIDAS -----------
 
-    elif not se_arrepiente():
-        STLLIM += T
-        NTIM += 1
-    else:
-        NSIM -= 1
+    def operar_salida_internet(index):
 
+        ctx.T = ctx.TPSINT[index]
 
-# ------ FIN LLEGADAS -----------
+        ctx.STSINT += ctx.T
+        ctx.NSINT -= 1
+        if ctx.NSINT >= ctx.NINT:
+            ta_int = ta_internet()
+            ctx.STAINT += ta_int
+            ctx.TPSINT[index] = ctx.T + ta_int
+        else:
+            ctx.ITOINT[index] = ctx.T
+            ctx.TPSINT[index] = ctx.HV
 
+    def operar_salida_cable(index):
 
-# ------ COMIENZO SALIDAS -----------
+        ctx.T = ctx.TPSTV[index]
+        ctx.STSTV += ctx.T
+        ctx.NSTV -= 1
+        if ctx.NSTV >= ctx.NTV:
+            ta_TV = ta_cable()
+            ctx.STATV += ta_TV
+            ctx.TPSTV[index] = ctx.T + ta_TV
+        else:
+            ctx.ITOTV[index] = ctx.T
+            ctx.TPSTV[index] = ctx.HV
 
-def operar_salida_internet(index):
-    global T, TPSINT, ITOINT, STSINT, NSINT, NINT, STAINT
+    def operar_salida_telefonia(index):
 
-    T = TPSINT[index]
+        ctx.T = ctx.TPSTEL[index]
+        ctx.STSTEL += ctx.T
+        ctx.NSTEL -= 1
+        if ctx.NSTEL >= ctx.NTEL:
+            ta_TEL = ta_telefonia()
+            ctx.STATEL += ta_TEL
+            ctx.TPSTEL[index] = ctx.T + ta_TEL
+        else:
+            ctx.ITOTEL[index] = ctx.T
+            ctx.TPSTEL[index] = ctx.HV
 
-    STSINT += T
-    NSINT -= 1
-    if NSINT >= NINT:
-        ta_int = ta_internet()
-        STAINT+= ta_int
-        TPSINT[index] = T + ta_int
-    else:
-        ITOINT[index] = T
-        TPSINT[index] = HV
+    def operar_salida_internet_movil(index):
 
-def operar_salida_cable(index):
-    global T, TPSTV, ITOTV, STSTV, NSTV, NTV, STATV
+        ctx.T = ctx.TPSIM[index]
+        ctx.STSIM += ctx.T
+        ctx.NSIM -= 1
+        if ctx.NSIM >= ctx.NIM:
+            ta_IM = ta_internet_movil()
+            ctx.STAIM += ta_IM
+            ctx.TPSIM[index] = ctx.T + ta_IM
+        else:
+            ctx.ITOIM[index] = ctx.T
+            ctx.TPSIM[index] = ctx.HV
 
-    T = TPSTV[index]
-    STSTV += T
-    NSTV -= 1
-    if NSTV >= NTV:
-        ta_TV = ta_cable()
-        STATV+= ta_TV
-        TPSTV[index] = T + ta_TV
-    else:
-        ITOTV[index] = T
-        TPSTV[index] = HV
+    def procesar_resultados():
+        stats = []
 
-def operar_salida_telefonia(index):
-    global T
-    global TPSTEL
-    global ITOTEL
-    global STSTEL
-    global NSTEL
-    global NTEL
-    global STATEL
+        # -------- INTERNET --------
+        PECINT = redondear((ctx.STSINT - ctx.STLLINT - ctx.STAINT) / ctx.NTINT if ctx.NTINT > 0 else 0, 5)
+        PTOINT = [0] * ctx.NINT
+        PARRINT = ctx.SarrInt * 100 / (ctx.NTINT + ctx.SarrInt)
+        for i in range(ctx.NINT):
+            PTOINT[i] = redondear((ctx.STOINT[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-    T = TPSTEL[index]
-    STSTEL += T
-    NSTEL -=1
-    if NSTEL >= NTEL:
-        ta_TEL = ta_telefonia()
-        STATEL+= ta_TEL
-        TPSTEL[index] = T + ta_TEL
-    else:
-        ITOTEL[index] = T
-        TPSTEL[index] = HV
+        stats.append(Stat(PECINT, PTOINT, PARRINT, "Internet", ctx.NINT))
 
-def operar_salida_internet_movil(index):
-    global T
-    global TPSIM
-    global ITOIM
-    global STSIM
-    global NSIM
-    global NIM
-    global STAIM
+        # -------- TELEFONIA --------
 
-    T = TPSIM[index]
-    STSIM += T
-    NSIM -=1
-    if NSIM >= NIM:
-        ta_IM = ta_internet_movil()
-        STAIM+= ta_IM
-        TPSIM[index] = T + ta_IM
-    else:
-        ITOIM[index] = T
-        TPSIM[index] = HV
+        PECTEL = redondear((ctx.STSTEL - ctx.STLLTEL - ctx.STATEL) / ctx.NTTEL if ctx.NTTEL > 0 else 0, 5)
+        PTOTEL = [0] * ctx.NTEL
+        PARRTEL = ctx.SarrTel * 100 / (ctx.NTINT + ctx.SarrTel)
+        for i in range(ctx.NTEL):
+            PTOTEL[i] = redondear((ctx.STOTEL[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-# ------ FIN SALIDAS -----------
+        stats.append(Stat(PECTEL, PTOTEL, PARRTEL, "Telefonia", ctx.NTEL))
 
-def mostrar_resultados():
-    global T
+        # -------- TV --------
 
-    # -------- INTERNET --------
-    global STLLINT, STSINT, STAINT, NTINT, NINT, STOINT
+        PECTV = redondear((ctx.STSTV - ctx.STLLTV - ctx.STATV) / ctx.NTTV if ctx.NTTV > 0 else 0, 5)
+        PTOTV = [0] * ctx.NTV
+        PARRTV = ctx.SarrTV * 100 / (ctx.NTINT + ctx.SarrTV)
+        for i in range(ctx.NTV):
+            PTOTV[i] = redondear((ctx.STOTV[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-    PECINT = redondear((STSINT - STLLINT - STAINT) / NTINT if NTINT > 0 else 0,5)
-    PTOINT = [0] * NINT
-    for i in range(NINT):
-        PTOINT[i] = redondear((STOINT[i] * 100) / T if T > 0 else 0,5)
+        stats.append(Stat(PECTV, PTOTV, PARRTV, "Television", ctx.NTV))
 
-    print("Internet")
-    print(f"Promedio de espera en cola: {PECINT} minutos")
-    for i in range(NINT):
-        print(f"Puesto {i+1}: {PTOINT[i]} % ocioso")
+        # -------- IM --------
 
-    # -------- TELEFONIA --------
-    global STLLTEL, STSTEL, STATEL, NTTEL, NTEL, STOTEL
+        PECSIM = redondear((ctx.STSIM - ctx.STLLIM - ctx.STAIM) / ctx.NTIM if ctx.NTIM > 0 else 0, 5)
+        PTOSIM = [0] * ctx.NIM
+        PARRIM = ctx.SarrIM * 100 / (ctx.NTINT + ctx.SarrIM)
+        for i in range(ctx.NIM):
+            PTOSIM[i] = redondear((ctx.STOIM[i] * 100) / ctx.T if ctx.T > 0 else 0, 5)
 
-    PECTEL = redondear((STSTEL - STLLTEL - STATEL) / NTTEL if NTTEL > 0 else 0,5)
-    PTOTEL = [0] * NTEL
-    for i in range(NTEL):
-        PTOTEL[i] = redondear((STOTEL[i] * 100) / T if T > 0 else 0,5)
+        stats.append(Stat(PECSIM, PTOSIM, PARRIM, "Internet movil", ctx.NIM))
 
-    print("Telefonia")
-    print(f"Promedio de espera en cola: {PECTEL} minutos")
-    for i in range(NTEL):
-        print(f"Puesto {i+1}: {PTOTEL[i]} % ocioso")
+        return stats
 
-    # -------- TV --------
-    global STLLTV, STSTV, STATV, NTTV, NTV, STOTV
+    class Stat:
+        def __init__(self, PEC, PTO, PARR, servicio, var_control):
+            self.PEC = PEC
+            self.PTO = PTO
+            self.PARR = PARR
+            self.servicio = servicio
+            self.control = var_control
 
-    PECTV = redondear((STSTV - STLLTV - STATV) / NTTV if NTTV > 0 else 0,5)
-    PTOTV = [0] * NTV
-    for i in range(NTV):
-        PTOTV[i] = redondear((STOTV[i] * 100) / T if T > 0 else 0,5)
+        def __str__(self):
+            string = f"Servicio: {self.servicio}"
 
-    print("Television")
-    print(f"Promedio de espera en cola: {PECTV} minutos")
-    for i in range(NTV):
-        print(f"Puesto {i+1}: {PTOTV[i]} % ocioso")
+            string += f"\nPromedio de espera en cola: {math.floor(self.PEC)}:{math.floor((self.PEC - math.floor(self.PEC))*60)} (mm:ss)"
+            for i in range(self.control):
+                string += f"\nPuesto {i + 1}: {self.PTO[i]} % ocioso"
 
+            string += f"\nPorcentaje de abandonos: {self.PARR} %\n"
+            return string
 
-    # -------- SIM --------
-    global STLLIM, STSIM, STAIM, NTIM, NIM, STOIM
-
-    PECSIM = redondear((STSIM - STLLIM - STAIM) / NTIM if NTIM > 0 else 0,5)
-    PTOSIM = [0] * NIM
-    for i in range(NIM):
-        PTOSIM[i] = redondear((STOIM[i] * 100) / T if T > 0 else 0,5)
-
-    print("Internet Movil")
-    print(f"Promedio de espera en cola: {PECSIM} minutos")
-    for i in range(NIM):
-        print(f"Puesto {i+1}: {PTOSIM[i]} % ocioso")
-
-def algoritmo_simulador():
-    iniciar()
-    global T, TPLL, NSINT, NSTEL, NSTV, NSIM
     while True:
         evento, index = determinar_evento()
         if evento == "LL":
@@ -403,35 +334,87 @@ def algoritmo_simulador():
         else:
             operar_salida_internet_movil(index)
 
-        if not T <= TF:
-            if NSINT > 0 or NSTEL > 0 or NSTV > 0 or NSIM > 0:
-                TPLL = HV
+        if not ctx.T <= ctx.TF:
+            if ctx.NSINT > 0 or ctx.NSTEL > 0 or ctx.NSTV > 0 or ctx.NSIM > 0:
+                ctx.TPLL = ctx.HV
             else:
-                mostrar_resultados()
-                break
-#Contexto de ejecucion
-DIA = "L"
-TURNO = "M"
-print("\nLunes - Mañana")
-algoritmo_simulador()
+                return procesar_resultados()
 
-TURNO = "T"
-print("\nLunes - Tarde")
-algoritmo_simulador()
+def dar_mejor_contexto(estadisticas):
+    mejor = estadisticas[0]
 
-TURNO = "N"
-print("\nLunes - Noche")
-algoritmo_simulador()
+    def score(contexto):
+        stats = contexto["stats"]
 
-DIA = "V"
-TURNO = "M"
-print("\nViernes - Mañana")
-algoritmo_simulador()
+        total_PARR = sum(s.PARR for s in stats)/100
+        total_PEC = sum(s.PEC for s in stats)/20 #minutos ajustable
+        total_PTO = sum(sum(s.PTO) for s in stats)/100
 
-TURNO = "T"
-print("\nViernes - Tarde")
-algoritmo_simulador()
+        return total_PARR * 2 + total_PEC *  + total_PTO
 
-TURNO = "N"
-print("\nViernes - Noche")
-algoritmo_simulador()
+    for contexto in estadisticas:
+        if score(contexto) < score(mejor):
+            mejor = contexto
+
+    return mejor
+
+# estadisticas = []
+# mejor_stat_lunes = None
+# print("\nLunes - Mañana")
+# for n_int in range(1,4):
+#     for n_tel in range(1,4):
+#         for n_tv in range(1,4):
+#             for n_im in range(1,4):
+#                 if n_int + n_tel + n_tv + n_im > 7:
+#                     continue
+#                 else:
+#                     estadisticas.append({
+#                         "config": (n_int, n_tel, n_tv, n_im),
+#                         "stats": simular(n_int, n_tel, n_tv, n_im, 360, "L", "M")
+#                     })
+#
+# mejor = dar_mejor_contexto(estadisticas)
+#
+# print("Mejor configuración:")
+# print(f"INT={mejor['config'][0]}, TEL={mejor['config'][1]}, TV={mejor['config'][2]}, IM={mejor['config'][3]}")
+#
+# for stat in mejor["stats"]:
+#     print(stat)
+#
+largo_plazo = simular(2, 1, 1, 1, 360, "L", "M")
+
+for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
+    for stat in largo_plazo:
+        if stat.servicio == servicio:
+            print(stat)
+
+# TURNO = "T"
+# TF=210
+# print("\nLunes - Tarde")
+# for stat in simular(1,1,1,1):
+#     print(stat)
+#
+# TURNO = "N"
+# TF=300
+# print("\nLunes - Noche")
+# for stat in simular(1,1,1,1):
+#     print(stat)
+#
+# DIA = "V"
+# TURNO = "M"
+# TF=360
+# print("\nViernes - Mañana")
+# for stat in simular(1,1,1,1):
+#     print(stat)
+#
+# TURNO = "T"
+# TF=210
+# print("\nViernes - Tarde")
+# for stat in simular(1,1,1,1):
+#     print(stat)
+#
+# TURNO = "N"
+# TF=300
+# print("\nViernes - Noche")
+# for stat in simular(1,1,1,1):
+#     print(stat + "\n")

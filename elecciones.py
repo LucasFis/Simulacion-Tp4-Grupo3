@@ -12,8 +12,10 @@ def eleccion_cola():
     else:
         return "SIM"
 
-def elegir_puesto(TPS):
-    return 0
+def elegir_puesto(TPS, STO, HV):
+    libres = [i for i in range(len(TPS)) if TPS[i] == HV]
+
+    return max(libres, key=lambda i: STO[i])
 
 def se_arrepiente():
     r = random.random()
