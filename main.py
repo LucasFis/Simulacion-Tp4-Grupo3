@@ -362,8 +362,11 @@ def dar_mejor_contexto(estadisticas):
 
         total_PARR = sum(s.PARR * demanda[s.servicio] for s in stats) # porcentaje
         total_PEC = sum(s.PEC * demanda[s.servicio] for s in stats) # minutos
+        total_puestos = sum(s.control for s in stats)
+        objetivo_PEC = 0.5 # 30 segundos
+        penalizacion_objetivo = sum(max(0, s.PEC - objetivo_PEC) for s in stats)
 
-        return total_PARR * 0.5 + total_PEC * 3
+        return 0.5 * total_puestos + total_PARR * 0.5 + total_PEC * 4 + penalizacion_objetivo * 10
 
     for contexto in estadisticas:
         if score(contexto) < score(mejor):
@@ -409,7 +412,7 @@ def simular_promedio(cInt, cTel, cTv, cIm, TF, DIA, TURNO, repeticiones):
 estadisticas = []
 mejor_stat_lunes = None
 REPETICIONES = 30
-print("\nLunes - Mañana")
+print("\nLunes - Tarde")
 for n_int in range(1,4):
     for n_tel in range(1,4):
         for n_tv in range(1,4):
@@ -419,7 +422,7 @@ for n_int in range(1,4):
                 else:
                     estadisticas.append({
                         "config": (n_int, n_tel, n_tv, n_im),
-                        "stats": simular_promedio(n_int, n_tel, n_tv, n_im, 360, "L", "M", REPETICIONES)
+                        "stats": simular_promedio(n_int, n_tel, n_tv, n_im, 360, "L", "T", REPETICIONES)
                     })
 
 mejor = dar_mejor_contexto(estadisticas)
