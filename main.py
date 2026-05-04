@@ -349,9 +349,9 @@ def dar_mejor_contexto(estadisticas):
 
         total_PARR = sum(s.PARR for s in stats)*100 # porcentaje
         total_PEC = sum(s.PEC for s in stats)/0.5 # minutos
-        total_PTO = sum(sum(s.PTO) for s in stats)/100 # porcentaje
+        total_PTO = sum(sum(s.PTO) for s in stats)/50 # porcentaje
 
-        return total_PARR * 2 + total_PEC * 3 + total_PTO
+        return total_PARR * 0.5 + total_PEC * 3 + total_PTO * 5
 
     for contexto in estadisticas:
         if score(contexto) < score(mejor):
@@ -371,7 +371,7 @@ for n_int in range(1,4):
                 else:
                     estadisticas.append({
                         "config": (n_int, n_tel, n_tv, n_im),
-                        "stats": simular(n_int, n_tel, n_tv, n_im, 360, "V", "M")
+                        "stats": simular(n_int, n_tel, n_tv, n_im, 360, "L", "M")
                     })
 
 mejor = dar_mejor_contexto(estadisticas)

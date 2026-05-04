@@ -15,7 +15,9 @@ def eleccion_cola():
 def elegir_puesto(TPS, STO, HV):
     libres = [i for i in range(len(TPS)) if TPS[i] == HV]
 
-
+    for i in libres:
+        if STO[i] == 0:
+            return i
 
     return max(libres, key=lambda i: STO[i])
 
