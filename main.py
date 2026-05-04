@@ -85,7 +85,7 @@ def calcular_porcentaje_abandono(arrepentidos, atendidos):
     total = atendidos + arrepentidos
     return arrepentidos * 100 / total if total > 0 else 0
 
-def simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
+def simular_puestos(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
     ctx = Contexto(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
 
     def determinar_evento():
@@ -354,10 +354,10 @@ def dar_mejor_contexto(estadisticas):
         stats = contexto["stats"]
 
         demanda = {
-            "Internet": 0.6161,
-            "Telefonia": 0.1197,
-            "Television": 0.1781,
-            "Internet movil": 0.0861
+            "Internet": 0.568,
+            "Telefonia": 0.105,
+            "Television": 0.255,
+            "Internet movil": 0.069
         }
 
         total_PARR = sum(s.PARR * demanda[s.servicio] for s in stats) # porcentaje
@@ -375,7 +375,7 @@ def dar_mejor_contexto(estadisticas):
     return mejor
 
 def simular_promedio(cInt, cTel, cTv, cIm, TF, DIA, TURNO, repeticiones):
-    stats_promedio = simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
+    stats_promedio = simular_puestos(cInt, cTel, cTv, cIm, TF, DIA, TURNO)
 
     acumulados = {
         stat.servicio: {
@@ -389,7 +389,7 @@ def simular_promedio(cInt, cTel, cTv, cIm, TF, DIA, TURNO, repeticiones):
     }
 
     for _ in range(repeticiones - 1):
-        for stat in simular(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
+        for stat in simular_puestos(cInt, cTel, cTv, cIm, TF, DIA, TURNO):
             acumulado = acumulados[stat.servicio]
             acumulado["PEC"] += stat.PEC
             acumulado["PARR"] += stat.PARR
@@ -409,61 +409,74 @@ def simular_promedio(cInt, cTel, cTv, cIm, TF, DIA, TURNO, repeticiones):
 
     return stats_promedio
 
-estadisticas = []
-mejor_stat_lunes = None
-REPETICIONES = 30
-print("\nLunes - Tarde")
-for n_int in range(1,4):
-    for n_tel in range(1,4):
-        for n_tv in range(1,4):
-            for n_im in range(1,4):
-                if n_int + n_tel + n_tv + n_im > 7:
-                    continue
-                else:
-                    estadisticas.append({
-                        "config": (n_int, n_tel, n_tv, n_im),
-                        "stats": simular_promedio(n_int, n_tel, n_tv, n_im, 360, "L", "T", REPETICIONES)
-                    })
 
-mejor = dar_mejor_contexto(estadisticas)
+def probar_optimo(DIA, TURNO, repeticiones):
+    print(f"Simulando para {DIA}: {TURNO}")
+    def dar_turno(TURNO):
+        if TURNO == "M":
+            return 360
+        elif TURNO == "T":
+            return 210
+        else:
+            return 300
 
-print("Mejor configuración:")
-print(f"INT={mejor['config'][0]}, TEL={mejor['config'][1]}, TV={mejor['config'][2]}, IM={mejor['config'][3]}")
+    estadisticas = []
+    for n_int in range(1, 4):
+        for n_tel in range(1, 4):
+            for n_tv in range(1, 4):
+                for n_im in range(1, 4):
+                    if n_int + n_tel + n_tv + n_im > 7:
+                        continue
+                    else:
+                        estadisticas.append({
+                            "config": (n_int, n_tel, n_tv, n_im),
+                            "stats": simular_promedio(n_int, n_tel, n_tv, n_im, dar_turno(TURNO), DIA, TURNO,repeticiones)
+                        })
+    mejor = dar_mejor_contexto(estadisticas)
 
-for stat in mejor["stats"]:
-    print(stat)
+    print("Mejor configuración:")
+    print(
+        f"INT={mejor['config'][0]}, TEL={mejor['config'][1]}, TV={mejor['config'][2]}, IM={mejor['config'][3]}")
 
+    for stat in mejor["stats"]:
+        print(stat)
 
-# stats_repeticion = []
-# iteraciones = 10
-#
-# for i in range(iteraciones):
-#     stats_repeticion.append(simular(2, 1, 1, 1, 360, "L", "M"))
+    print(f"Fin simulacion para {DIA}: {TURNO} ------------------------\n")
+
+stats_repeticion = []
+iteraciones = 10
+
+for i in range(iteraciones):
+    stats_repeticion.append(simular_puestos(1, 1, 1, 1, 360, "L", "T"))
+
+for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
+    suma_pec = 0
+    suma_parr = 0
+    suma_pto = 0
+
+    for simulacion in stats_repeticion:      # cada simulacion es una lista de Stat
+        for stat in simulacion:
+            if stat.servicio == servicio:
+                suma_pec += stat.PEC
+                suma_parr += stat.PARR
+                suma_pto += sum(stat.PTO) / len(stat.PTO)
+
+    print(f"\nServicio: {servicio}")
+    print(f"Espera por persona: {math.floor(suma_pec/iteraciones)}:{math.floor((suma_pec/iteraciones - math.floor(suma_pec/iteraciones))*60)} (minutos:segundos)")
+    print(f"Abandono de llamada: {redondear(suma_parr / iteraciones,2)} %")
+    print(f"Tiempo ocioso: {redondear(suma_pto / iteraciones,2)} %")
+
+# probar_optimo("L", "M", 4)
+# probar_optimo("V", "M", 4)
+# probar_optimo("L", "T", 4)
+# probar_optimo("V", "T", 4)
+# probar_optimo("L", "N", 4)
+# probar_optimo("V", "N", 4)
+
+# resultados = simular(1, 1, 1, 1, 360, "L", "M")
 #
 # for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
-#     suma_pec = 0
-#     suma_parr = 0
-#     suma_pto = 0
-#
-#     for simulacion in stats_repeticion:      # cada simulacion es una lista de Stat
-#         for stat in simulacion:
-#             if stat.servicio == servicio:
-#                 suma_pec += stat.PEC
-#                 suma_parr += stat.PARR
-#                 suma_pto += sum(stat.PTO) / len(stat.PTO)
-#
-#     print(f"\nServicio: {servicio}")
-#     print(f"Espera por persona: {math.floor(suma_pec/iteraciones)}:{math.floor((suma_pec/iteraciones - math.floor(suma_pec/iteraciones))*60)} (minutos:segundos)")
-#     print(f"Abandono de llamada: {redondear(suma_parr / iteraciones,2)} %")
-#     print(f"Tiempo ocioso: {redondear(suma_pto / iteraciones,2)} %")
-
-
-
-
-# largo_plazo = simular(2, 1, 1, 1, 360, "L", "M")
-#
-# for servicio in ["Internet", "Television", "Internet movil", "Telefonia"]:
-#     for stat in largo_plazo:
+#     for stat in resultados:
 #         if stat.servicio == servicio:
 #             print(stat)
 

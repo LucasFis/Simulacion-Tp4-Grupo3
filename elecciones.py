@@ -1,6 +1,6 @@
 import random
 
-def eleccion_cola():
+def eleccion_servicio():
     r = random.random()  # número entre 0 y 1
 
     if r < 0.568:

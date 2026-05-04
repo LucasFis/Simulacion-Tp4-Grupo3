@@ -3,7 +3,6 @@ from scipy import stats
 
 from elecciones import redondear
 
-
 def ia_lunes_maniana():
     while True:
         df = 0.6473329065381139

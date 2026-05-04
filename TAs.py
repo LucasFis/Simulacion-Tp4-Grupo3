@@ -1,7 +1,6 @@
 import numpy as np
 from scipy import stats
 
-from elecciones import redondear
 def ta_internet():
     a = 2.051524387177043
     b = 5.456008966942054
